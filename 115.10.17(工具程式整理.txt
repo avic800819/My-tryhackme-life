@@ -1,0 +1,5 @@
+Obsidian  (筆記類 程式碼 有資料庫可以抓)
+
+VirtualBox 
+Open VPN(裡面有)
+KAIL工具 (VirtualBox 專用版映像檔)
