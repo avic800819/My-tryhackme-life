@@ -38,6 +38,13 @@ dpkg          控制台                              打開控制台(新增移�
 grep          文字過濾                            Ctrl + F
 netstat       網路                                網路統計
  -tuln        查網路門牌                          查網路門牌
+ps aux        翻工作管理員                        翻工作管理員把所有程式吐出來
+-m            建立家目錄                          建立家目錄
+--lock        鎖定使用者                          鎖定使用者
+su            切換使用者                          切換使用者
+command       命令/指令                           我命令他 不切換過去
+ 
+
 
 
 二、 權限、身分與提權 (Privilege Escalation)
