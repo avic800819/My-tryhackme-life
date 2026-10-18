@@ -29,6 +29,9 @@ echo $...     echo                                印路徑(字) 看變數內容
 uname -a      all name                            顯示各項硬體及軟體 os 各項系統
 ps            ps                                  看工作管理員執行甚麼程式
 ip a          address                             看網卡的ip位置
+ -t           time                                查詢時間
+ls -i         inode                               列出索引(inode)號碼
+
 
 
 二、 權限、身分與提權 (Privilege Escalation)
@@ -46,6 +49,10 @@ find          find                                系統檔案深度搜尋工具
   -perm       permission                          依權限篩選檔案（常搭配 -u=s 搜尋 SUID 提權後門）
   -type f     type file                           指定只搜尋一般檔案（排除資料夾）
   2>/dev/null 2 (stderr) redirect to null         將所有錯誤警告與存取拒絕訊息重定向丟入黑洞，防止洗版
+which                                             找尋檔名的絕對路徑(可執行程式) 二進位檔
+-size +25k -size -28k size                    依檔案大小篩選（+代表大於，-代表小於，k代表KB）
+
+
 
 
 三、 網路偵察掃描 (Nmap - Network Mapper)
