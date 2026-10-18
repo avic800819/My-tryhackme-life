@@ -31,7 +31,11 @@ ps            ps                                  看工作管理員執行甚麼
 ip a          address                             看網卡的ip位置
  -t           time                                查詢時間
 ls -i         inode                               列出索引(inode)號碼
-
+| wc -l                                           計算數量 後面固定結尾 顯示數量
+dpkg          控制台                              打開控制台(新增移除程式)
+|             交                                  把計算結果給下一個人 
+^             過濾工具                            過濾工具
+grep          文字過濾                            Ctrl + F
 
 
 二、 權限、身分與提權 (Privilege Escalation)
