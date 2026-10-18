@@ -25,6 +25,10 @@ rm            remove                              刪除檔案或資料夾
   -f          force                               強制刪除（忽略警告，不跳出確認提示）
 cp            copy                                複製檔案或資料夾
 mv            move                                移動檔案（亦用作檔案重新命名）
+echo $...     echo                                印路徑(字) 看變數內容
+uname -a      all name                            顯示各項硬體及軟體 os 各項系統
+ps            ps                                  看工作管理員執行甚麼程式
+ip a          address                             看網卡的ip位置
 
 
 二、 權限、身分與提權 (Privilege Escalation)
