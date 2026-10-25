@@ -1,0 +1,218 @@
+================================================================================
+【Windows 實戰枚舉、搜尋與系統偵察速查 Cheatsheet】
+================================================================================
+
+一、 檔案搜尋與內容過濾 (CMD / PowerShell)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+dir                   directory                   列出當前目錄內容
+  - /s                subdirectories              遞迴搜尋子目錄：往下遍歷所有層級資料夾
+  - /b                bare format                 極簡裸模式：僅印出完整檔案路徑，方便複製過濾
+  - /a:h              attribute: hidden           屬性過濾：只列出具備隱藏屬性的檔案與資料夾
+
+findstr               find string                 文字搜尋工具（類似 Linux grep）
+  - /s                subdirectories              在目前目錄及所有子目錄的檔案中進行搜尋
+  - /i                ignore case                 忽略大小寫：不分大小寫比對字串
+  - /n                number                      顯示行號：輸出符合字串所在檔案中的行號
+
+where                 where                       搜尋執行檔路徑（類似 Linux which）
+  - /R                recurse                     遞迴指定路徑：指定從特定根目錄往下搜尋符合的檔案
+
+tree                  directory tree              以樹狀圖顯示目錄結構
+  - /F                files                       展開檔案：除了資料夾外，連同裡面的檔案一併列出
+  - /A                ASCII                       純字元模式：改用標準 ASCII 字元繪製樹狀圖，防止終端機亂碼
+
+Get-ChildItem         Get Child Item              PowerShell 檔案與目錄列舉 cmdlet
+  - -Recurse          Recurse                     遞迴遍歷子目錄
+  - -Filter           Filter                      指定檔案比對條件（如 *.log, *.txt）
+  - -ErrorAction      Error Action                設定錯誤處理策略（搭配 SilentlyContinue 可忽略權限錯誤）
+
+Select-String         Select String               PowerShell 文字內容搜尋 cmdlet（支援正規表達式）
+  - -Pattern          Pattern                     指定欲比對搜尋的字串規則或樣式
+  - -Path             Path                        指定要進行內容搜尋的檔案路徑
+
+
+二、 當前使用者與特權偵察 (Whoami)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+whoami                who am I                    檢視當前已登入或取得 Shell 的使用者帳號
+  - /priv             privileges                  特權清單：檢視 Token 具備的權限（如 SeImpersonate、SeBackup）
+  - /groups           groups                      群組清單：檢視當前帳號隸屬的所有安全性群組
+  - /all              all                         完整傾印：一次輸出帳號 SID、隸屬群組及所有 Token 特權狀態
+
+wmic os list brief    wmic os list brief          列印作業系統簡要資訊（快速取得組建版本號 BuildNumber 與註冊使用者）
+systeminfo            system information          印出完整系統資訊、Hotfix 修補清單與硬體架構（速度較慢）
+
+三、 系統與網路環境枚舉 (Host & Network)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+systeminfo            system information          印出作業系統名稱、核心版本號、Hotfix 修補清單與硬體架構
+route print           route print                 印出本機路由表與介面清單
+ipconfig /all         IP configuration all        完整列出所有網路卡之 IP、子網路遮罩、Gateway 與 DNS
+
+netstat               network statistics          監控本機所有 TCP/UDP 網路通訊協定與連接埠狀態
+  - -a                all                         所有連線：顯示所有已連線以及正在 Listening 的連接埠
+  - -n                numerical                   數字顯示：不進行反向 DNS 解析，直接顯示 IP:Port，速度最快
+  - -o                owning process ID           顯示 PID：顯示佔用該連接埠的程序識別碼，方便後續追查
+
+tasklist              task list                   列出目前系統正在執行的所有前景與背景程序
+  - /v                verbose                     詳細資訊：顯示執行程序的執行身分（User Name）與視窗標題
+  - /svc              services                    關聯服務：顯示各個 svchost.exe 內載入的 Windows 服務名稱
+
+
+四、 本地帳號與服務枚舉 (Net & Service Controller)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+net user              net user                    列出主機上所有的本地使用者帳號
+net user [使用者名稱]  net user [username]         查詢特定使用者的詳細設定（密碼是否過期、上次登入時間等）
+net localgroup        net local group             列出主機上所有的本地群組名稱
+net localgroup        local group administrators  管理員清單：直接列出本機管理者群組（Administrators）的所有成員
+administrators
+
+sc                    service controller          Windows 系統服務管理與控制核心指令
+  - qc                query configuration         查詢服務配置：檢視服務啟動類型與執行檔路徑（BINARY_PATH_NAME）
+  - query             query                       查詢指定服務當前運作狀態（RUNNING / STOPPED）
+
+
+五、 註冊表查詢 (Registry Query)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+reg query             registry query              讀取 Windows 註冊表中的機碼路徑與數值
+  - /v                value name                  指定鍵值：僅查詢特定的鍵值名稱
+  - /s                subkeys                     遞迴搜尋：連同該機碼底下所有層級的子機碼一同展開
+  - /f                find / filter               字串比對：在註冊表指定路徑內搜尋包含特定文字的項目
+
+
+六、 網路除錯與原生通訊檢測 (Netcat / PowerShell Network)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+nc                    netcat                      網路除錯與通訊測試工具（網路瑞士刀）
+  - -l                listen                      監聽模式：本機作為伺服端（Server）等待連線
+  - -p                port                        指定連接埠：設定本機要監聽或連線的通訊埠編號
+  - -v                verbose                     詳細輸出：輸出連線建立與除錯訊息
+  - -n                numeric-only                純數字模式：不作 DNS 解析，加快測試反應速度
+  - -u                UDP                         UDP 協定：切換為 UDP 連線測試（預設為 TCP）
+  - -z                zero-I/O                    探測模式：僅確認連接埠連通性，不傳送資料立即中斷
+
+Test-NetConnection    Test Net Connection         PowerShell 網路連線診斷指令（常用簡稱 tnc）
+  - -Port             Port                        指定欲測試目標主機是否開放之通訊埠編號
+
+Get-NetTCPConnection  Get Net TCP Connection      PowerShell 本地 TCP 連線狀態查詢工具
+  - -State Listen     State Listen                過濾狀態：僅列出處於監聽（Listen）狀態的連線
+  - -LocalPort        Local Port                  指定過濾本地特定通訊埠編號
+================================================================================
+
+
+================================================================================
+【Windows 指令速查補充：使用者列舉、啟動項與註冊表探查】
+================================================================================
+
+一、 使用者帳號與 SID 列舉 (User & SID Enumeration)
+--------------------------------------------------------------------------------
+‧ 查目前登入者身分與 SID：
+  whoami /user
+
+‧ 查詢本機所有使用者的名稱與 SID (CMD / WMIC 快速版)：
+  wmic useraccount get name,sid
+
+‧ 查詢指定使用者的 SID (CMD / WMIC)：
+  wmic useraccount where name='bob.smith' get name,sid
+
+‧ 查詢指定使用者與 SID (PowerShell 物件篩選)：
+  Get-CimInstance Win32_UserAccount -Filter "Name = 'bob.smith'" | Select-Object Name, SID
+
+‧ 列出所有本機帳號清單 (CMD 原生)：
+  net user
+
+
+二、 開機自啟動與停用項目探查 (Startup & Disabled Programs)
+--------------------------------------------------------------------------------
+‧ 列出系統所有開機自啟動程式清單 (名稱、執行指令、註冊路徑)：
+  Get-CimInstance Win32_StartupCommand | Select-Object Name, Command, Location, User
+
+‧ 檢查「工作管理員」中被使用者停用 (Disable) 的開機自啟程式 (檢查登錄表)：
+  Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+
+‧ 查詢本機已安裝的第三方防毒軟體 (AntiVirus Product)：
+  wmic /namespace:\\root\securitycenter2 path antivirusproduct get displayname
+
+
+三、 PowerShell 物件篩選與管線核心語法 (Object Pipeline)
+--------------------------------------------------------------------------------
+‧ 挑選特定屬性欄位顯示 (類似 Linux awk，但按屬性名挑選)：
+  [指令] | Select-Object Name, SID, PathName
+
+‧ 條件篩選 (類似 Linux grep)：
+  [指令] | Where-Object { $_.Name -like "*關鍵字*" }
+
+‧ 條列展開詳細資訊 (不縮排截斷長文字)：
+  [指令] | Format-List
+================================================================================
+
+================================================================================
+【Windows 指令速查補充：使用者列舉、啟動項與註冊表探查】
+================================================================================
+
+一、 使用者帳號與 SID 列舉 (User & SID Enumeration)
+--------------------------------------------------------------------------------
+‧ 查目前登入者身分與 SID：
+  whoami /user
+
+‧ 查詢本機所有使用者的名稱與 SID (CMD / WMIC 快速版)：
+  wmic useraccount get name,sid
+
+‧ 查詢指定使用者的 SID (CMD / WMIC)：
+  wmic useraccount where name='bob.smith' get name,sid
+
+‧ 查詢指定使用者與 SID (PowerShell 物件篩選)：
+  Get-CimInstance Win32_UserAccount -Filter "Name = 'bob.smith'" | Select-Object Name, SID
+
+‧ 列出所有本機帳號清單 (CMD 原生)：
+  net user
+
+
+二、 開機自啟動與停用項目探查 (Startup & Disabled Programs)
+--------------------------------------------------------------------------------
+‧ 列出系統所有開機自啟動程式清單 (名稱、執行指令、註冊路徑)：
+  Get-CimInstance Win32_StartupCommand | Select-Object Name, Command, Location, User
+
+‧ 檢查「工作管理員」中被使用者停用 (Disable) 的開機自啟程式 (檢查登錄表)：
+  Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+
+‧ 查詢本機已安裝的第三方防毒軟體 (AntiVirus Product)：
+  wmic /namespace:\\root\securitycenter2 path antivirusproduct get displayname
+
+
+三、 PowerShell 物件篩選與管線核心語法 (Object Pipeline)
+--------------------------------------------------------------------------------
+‧ 挑選特定屬性欄位顯示 (類似 Linux awk，但按屬性名挑選)：
+  [指令] | Select-Object Name, SID, PathName
+
+‧ 條件篩選 (類似 Linux grep)：
+  [指令] | Where-Object { $_.Name -like "*關鍵字*" }
+
+‧ 條列展開詳細資訊 (不縮排截斷長文字)：
+  [指令] | Format-List
+================================================================================
+
+# PowerShell 物件方式查詢
+(Get-CimInstance Win32_UserAccount -Filter "Name = 'Jim'").SID
+(Get-CimInstance Win32_Group -Filter "Name = 'HR'").SID
+
+# CMD / WMIC 方式查詢
+wmic useraccount where name='Jim' get sid
+wmic group where name='HR' get sid
+
+# 依關鍵字篩選服務清單
+Get-Service | Where-Object { $_.DisplayName -like "*update*" -or $_.Name -like "*update*" } | Select-Object Name, DisplayName
+
+# 查詢特定服務的底層二進位路徑與狀態
+Get-CimInstance Win32_Service -Filter "Name = 'wuauserv'" | Select-Object Name, DisplayName, State, PathName | Format-List
+
+
