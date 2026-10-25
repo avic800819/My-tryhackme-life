@@ -33,6 +33,38 @@ Select-String         Select String               PowerShell 文字內容搜尋 
   - -Path             Path                        指定要進行內容搜尋的檔案路徑
 
 
+dir "C:\Users\*waldo.txt*" /s /b 2>nul            使用 dir 遞迴模糊搜尋
+
+
+findstr /s /i /n "password" C:\Users\*.txt 2>nul    搜尋檔案內文關鍵字（findstr）
+
+
+Get-ChildItem -Path C:\Users -Filter "*waldo*" -Recurse -File -ErrorAction SilentlyContinue | Select-Object FullName    安全遞迴搜尋（自動略過無權限目錄）：
+
+Get-ChildItem -Path C:\Users -Filter "*waldo.txt*" -Recurse -File -ErrorAction SilentlyContinue | Get-Content    搜尋並直接讀取內容（管線串接）：
+
+
+
+檢視目前身分與檔案權限
+
+whoami /groups
+whoami /priv                                      確認當前帳號是否擁有管理員權限（如具有 Administrators 或 SeTakeOwnershipPrivilege）：
+
+
+icacls "C:\Users\TargetFolder"                        檢查目標目錄/檔案目前的存取控制清單（ACL）：
+
+takeown /f "C:\Users\TargetFolder" /r /d y                將目標目錄及其所有子檔案的擁有人強制改為當前登入者：
+
+icacls "C:\Users\TargetFolder" /grant administrators:F /t       取回擁有權後，為管理員群組或自己加上完全存取權限（Full Access）：
+
+type "C:\Users\TargetFolder\file.txt"                            權限修復完成後，直接檢視內容：
+
+     
+
+
+            
+
+
 二、 當前使用者與特權偵察 (Whoami)
 --------------------------------------------------------------------------------
 指令/參數              原始英文完整單字            白話功能與設計邏輯
@@ -44,6 +76,8 @@ whoami                who am I                    檢視當前已登入或取得
 
 wmic os list brief    wmic os list brief          列印作業系統簡要資訊（快速取得組建版本號 BuildNumber 與註冊使用者）
 systeminfo            system information          印出完整系統資訊、Hotfix 修補清單與硬體架構（速度較慢）
+
+Get-Location                                      確定位子(資料夾)
 
 三、 系統與網路環境枚舉 (Host & Network)
 --------------------------------------------------------------------------------
