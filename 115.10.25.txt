@@ -1,0 +1,162 @@
+資訊類型 (Types of Information)
+├── 一般系統資訊 (General System Information)
+│   ├── 主機名稱 (Hostname)
+│   ├── 作業系統資訊 (OS Information)
+│   │   ├── 系統名稱 (OS Name)
+│   │   ├── 系統版本 (OS Version)
+│   │   └── 系統配置 (OS Configuration)
+│   └── 已安裝的補丁與修補程式 (Installed Patches/Hotfixes)
+│
+├── 網路資訊 (Networking Information)
+│   ├── 主機 IP 位址 (Host IP Address)
+│   ├── 可用網路介面 (Available Network Interfaces)
+│   ├── 可通達的子網段 (Accessible Subnets)
+│   ├── 已知主機 (Known Hosts)
+│   ├── 網路資源 (Network Resources)
+│   │   ├── 網路共享 (Network Shares)
+│   │   ├── 網域資源 (Domain Resources)
+│   │   └── 網路設備（路由器等） (Network Devices (routers, etc.))
+│   └── 防火牆配置 (Firewall Configuration)
+│
+├── 基本網域資訊 (Basic Domain Information)
+│   ├── 網域與工作群組名稱 (Domain/Workgroup Name)
+│   └── 登入伺服器 (Logon server)
+│
+└── 使用者資訊 (User Information)
+    ├── 使用者帳號 (User Accounts)
+    ├── 本機群組 (Local Groups)
+    ├── 環境變數 (Environment Variables)
+    ├── 可用任務 (Available Tasks)
+    │   ├── 主機目前執行中 (Currently Running on Host)
+    │   └── 排程任務 (Scheduled Tasks)
+    └── 可用服務 (Available Services)
+        ├── 已知防毒軟體解決方案 (Known Anti-Virus Solutions)
+        └── EDR與XDR解決方案 (EDR/XDR Solutions)
+
+-----------------------------------------------------------------------
+# Windows 主機枚舉（Information Gathering）核心框架
+
+在滲透測試中取得 Windows 主機 Initial Access（初始立足點）後，枚舉資訊主要分為四大維度（Types of Information）：
+
+---
+
+## 1. 一般系統資訊（General System Information）
+> **目標**：掌握作業系統版本、修補程式（Hotfixes）與主機硬體/網路標識，尋找已知 CVE 漏洞。
+
+* **Hostname**：主機名稱
+  - CMD: `hostname`
+* **OS Information**：作業系統詳細版本與架構
+  - CMD: `systeminfo`
+  - 核心關注：
+    - OS Name（如 Windows Server 2019 / Windows 10 Pro）
+    - OS Version / Build Number（如 10.0.19041）
+    - OS Configuration（獨立主機或網域成員）
+* **Installed Patches / Hotfixes**：已安裝的系統安全更新
+  - CMD: `wmic qfe list brief` 或 `systeminfo`
+  - 滲透價值：比對未安裝的補丁，尋找內核提權漏洞（Privilege Escalation）。
+
+---
+
+## 2. 網路資訊（Networking Information）
+> **目標**：確認本機網路位置，探測內網相鄰網段、路由與共享資源，做為橫向移動（Lateral Movement）的依據。
+
+* **Host IP Address**：主機 IP 設定
+  - CMD: `ipconfig /all`
+* **Available Network Interfaces**：網卡與介面清單
+  - CMD: `ipconfig`
+* **Accessible Subnets**：可通達的子網段與路由表
+  - CMD: `route print`
+* **DNS Server(s)**：DNS 伺服器配置（通常是網域 DC 所在）
+  - CMD: `ipconfig /all`、`nslookup`
+* **Known Hosts**：本機已知的通訊主機（ARP 快取與主機映射）
+  - CMD: `arp -a`
+  - 查看 hosts 檔：`type C:\Windows\System32\drivers\etc\hosts`
+* **Network Resources**：網路共享與連線資源
+  - 本地共享（Network Shares）：`net share`
+  - 網域共享（Domain Resources）：`net view /domain`
+  - 外部連線裝置：掛載的網路硬碟磁碟機（Network Drives）。
+* **Wall Firewall Configuration**：本機防火牆狀態
+  - CMD: `netsh advfirewall show allprofiles`
+
+---
+
+## 3. 基本網域資訊（Basic Domain Information）
+> **目標**：確認主機是屬於本機工作群組還是加入 Active Directory（AD 網域），判斷是否需轉向網域滲透。
+
+* **Domain / Workgroup Name**：目前所在的網域或工作群組名稱
+  - CMD: `systeminfo | findstr /B /C:"Domain"`
+  - CMD: `echo %USERDOMAIN%`
+* **Logon Server**：負責驗證登入的伺服器（通常為網域控制站 Domain Controller / DC）
+  - CMD: `echo %LOGONSERVER%`
+  - CMD: `nltest /dsgetdc:%USERDOMAIN%`
+
+---
+
+## 4. 使用者與服務資訊（User Information）
+> **目標**：了解當前存取權限、本機其他使用者群組、執行中進程與防護軟體（EDR/AV）。
+
+* **User Accounts**：本機帳號清單
+  - 當前身份：`whoami`
+  - 當前權限/特權：`whoami /priv`
+  - 當前所屬群組：`whoami /groups`
+  - 所有本機帳號：`net user`
+* **Local Groups**：本地安全群組成員清單（如 Administrators）
+  - CMD: `net localgroup administrators`
+* **Environment Variables**：環境變數（常藏有路徑、Token 或自訂變數）
+  - CMD: `set`
+* **Available Tasks（執行中任務）**：
+  - Currently Running on Host（目前執行中進程）：`tasklist /v`
+  - Scheduled Tasks（排程任務，提權重點）：`schtasks /query /fo LIST /v`
+* **Available Services（系統服務與防護軟體）**：
+  - 運作中服務清單：`net start`、`sc query`
+  - Known Anti-Virus Solutions（防毒軟體狀態）：
+    - 檢查 Defender：`sc query WinDefend` 或使用 PowerShell 查詢安全產品。
+  - EDR / XDR Solutions（檢查端點防護常駐 Process）。
+
+---
+
+### 滲透測試的核心思維（Core Questions）
+每進入一台新目標主機，立刻自問四個問題：
+1. **系統資訊**：能拿到哪些 OS/補丁版本資訊？是否存在已知漏洞？
+2. **網路交互**：這台機器跟哪些網路、網段與其他主機有連線交互？
+3. **存取權限**：目前持有帳號的特權是什麼？能讀寫存取哪些關鍵路徑？
+4. **橫向/提權**：從現有資訊中，能挖掘到哪些憑證、未加密密碼或排程任務來做權限擴展？
+
+
+========================================
+Windows 枚舉雙核心對照
+========================================
+
+【whoami】
+* 核心關注維度：當前使用者權限（我是誰？我能做什麼？）
+* 滲透測試用途：確認目前 Shell 的執行權限與身分，評估能否直接提權。
+* 常用參數：
+  - whoami /priv       : 檢視持有特權（例如 SeImpersonatePrivilege）
+  - whoami /groups     : 檢視所屬群組（確認是否在管理員組）
+  - whoami /all        : 列出完整安全識別碼與所有詳細特權
+
+----------------------------------------
+
+【systeminfo】
+* 核心關注維度：整台系統與主機全貌（這是什麼機器？有哪些漏洞？）
+* 滲透測試用途：辨識 OS 版本、修補程式（Hotfixes），比對已知的系統提權 CVE。
+* 常用參數與過濾：
+  - systeminfo | findstr /B /C:"OS Name"   : 快速查系統版本
+  - systeminfo | findstr /B /C:"Domain"    : 快速查網域歸屬
+  - systeminfo | findstr /C:"KB"           : 過濾已安裝的安全補丁清單
+========================================
+
+
+# Windows CLI 檔案搜尋與權限提權/接管速查筆記
+
+在純命令列（無 GUI）環境下，當需要定位關鍵檔案（如 flag、憑證、設定檔）或遇到「存取遭拒（Access Denied）」時的標準處理流程。
+
+---
+
+## 一、 精準檔案搜尋（避免全盤掃描造成卡死或洗版）
+
+### 1. CMD 環境常用指令
+
+* **針對特定目錄遞迴尋找（最快、最不易出錯）：**
+  ```cmd
+  where /R C:\Users waldo.txt 2>nul
