@@ -1,0 +1,41 @@
+================================================================================
+Windows 事件日誌 (Event Logs) 資安實戰精華速查筆記
+================================================================================
+
+[核心架構與儲存]
+--------------------------------------------------------------------------------
+1. 本質：Windows 系統記錄驗證、行為與異常的中央日誌庫。
+2. 檔案格式：二進位 XML 封裝 (.evtx)，無法直接用純文字閱讀器打開。
+3. 預設存放實體路徑：
+   C:\Windows\System32\winevt\Logs\*.evtx
+4. 核心日誌分類：
+   - Security.evtx    : 安全與鑑識靈魂，紀錄所有登入、授權、帳號異動。
+   - System.evtx      : 核心系統、驅動程式、系統服務 (Service) 啟動與異常。
+   - Application.evtx : 應用程式本體 (如 SQL、網頁服務) 紀錄。
+
+
+[實戰必記 Event ID 清單 (藍隊抓賊 / 紅隊自查)]
+--------------------------------------------------------------------------------
+Event ID 4624 : 登入成功 (關鍵看 LogonType: 2本機, 3網路連線, 10遠端RDP)
+Event ID 4625 : 登入失敗 (大量密集出現 = 暴力破解 / 密碼噴灑攻擊)
+Event ID 4720 : 建立了新使用者帳號 (攻擊者留後門常用手段)
+Event ID 4728 : 使用者被加入全域網域管理員群組 (Domain Admins)
+Event ID 4732 : 使用者被加入本機管理員群組 (Administrators)
+Event ID 7045 : (System 日誌) 系統安裝了新服務 (如木馬以服務形態持久化)
+Event ID 1102 : 審查日誌被手動清空 (紅隊銷毀足跡行為)
+
+
+[雙主流指令操作 (wevtutil vs Get-WinEvent)]
+--------------------------------------------------------------------------------
+1. 傳統輕量指令：wevtutil (Cmd / PowerShell 皆支援，適合快速操作)
+   - 列出系統中所有日誌通道 : wevtutil el
+   - 查看安全日誌最新 5 筆  : wevtutil qe Security /c:5 /rd:true /f:text
+   - 備份/匯出日誌檔案      : wevtutil epl Security C:\Users\Public\sec.evtx
+   - 紅隊痕跡清理 (清空日誌): wevtutil cl Security
+
+2. PowerShell 現代指令：Get-WinEvent (支援強大物件過濾)
+   - 抓取安全日誌最新 5 筆  : Get-WinEvent -LogName 'Security' -MaxEvents 5
+   - 精準查詢特定 Event ID  : Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625}
+   - 查詢特定時間段事件     : Get-WinEvent -FilterHashtable @{LogName='System'; ID=7045; StartTime=(Get-Date).AddDays(-1)}
+
+================================================================================
