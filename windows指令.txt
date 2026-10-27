@@ -249,4 +249,76 @@ Get-Service | Where-Object { $_.DisplayName -like "*update*" -or $_.Name -like "
 # 查詢特定服務的底層二進位路徑與狀態
 Get-CimInstance Win32_Service -Filter "Name = 'wuauserv'" | Select-Object Name, DisplayName, State, PathName | Format-List
 
+------------------------------------------------------------------------
 
+
+
+================================================================================
+PowerShell vs Linux 常用指令速查對照表 (HTB Windows Command Line)
+================================================================================
+
+[檔案與目錄搜尋]
+--------------------------------------------------------------------------------
+PowerShell 指令 : Get-ChildItem
+常用別名/簡寫   : gci, ls, dir
+Linux 對應      : ls / find
+功能說明        : 列出目錄與檔案內容
+
+PowerShell 參數 : -Recurse
+Linux 對應      : -r / -R
+功能說明        : 遞迴搜尋目前目錄及其底下的所有子目錄
+
+PowerShell 參數 : -File
+Linux 對應      : -type f
+功能說明        : 僅篩選出「檔案」（排除資料夾）
+
+
+[文字與字串搜尋]
+--------------------------------------------------------------------------------
+PowerShell 指令 : Select-String
+常用別名/簡寫   : sls
+Linux 對應      : grep
+功能說明        : 在檔案或輸出文字中搜尋指定字串或正則表達式
+
+
+[管線與資料過濾]
+--------------------------------------------------------------------------------
+PowerShell 符號 : |
+Linux 對應      : | (Pipe)
+功能說明        : 將前一個命令的輸出當作下一個命令的輸入傳遞
+
+PowerShell 指令 : Where-Object
+常用別名/簡寫   : where, ?
+Linux 對應      : grep / awk
+功能說明        : 依特定條件過濾物件屬性值 (如: where {$_.Name -like "*.txt"})
+
+PowerShell 指令 : Select-Object
+常用別名/簡寫   : select
+Linux 對應      : awk '{print $x}' / cut
+功能說明        : 挑選指定的物件欄位（屬性）顯示 (如: select Name, Length)
+
+
+[資料統計與排序]
+--------------------------------------------------------------------------------
+PowerShell 指令 : Sort-Object
+常用別名/簡寫   : sort
+Linux 對應      : sort
+功能說明        : 將結果依照指定欄位或字母順序排序
+
+PowerShell 指令 : Get-Unique
+常用別名/簡寫   : unique
+Linux 對應      : uniq
+功能說明        : 去除重複項目（通常先接排序）
+
+PowerShell 指令 : Measure-Object
+常用別名/簡寫   : measure
+Linux 對應      : wc -l / wc
+功能說明        : 統計物件數量、行數或數值加總
+
+
+[物件結構查看]
+--------------------------------------------------------------------------------
+PowerShell 指令 : Get-Member
+常用別名/簡寫   : gm
+Linux 對應      : 無直接對應 (物件反射)
+功能說明        :
